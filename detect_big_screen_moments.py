@@ -313,6 +313,12 @@ def ingest_clip_to_platform(api_url, event_id, thumb_src, clip_src, duration, in
     try:
         with urllib.request.urlopen(req, timeout=60) as resp:
             return True, json.loads(resp.read().decode())
+    except urllib.error.HTTPError as e:
+        try:
+            detail = e.read().decode(errors="replace")[:1500]
+        except Exception:
+            detail = str(e)
+        return False, detail
     except urllib.error.URLError as e:
         return False, str(e)
 
@@ -413,4 +419,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
