@@ -23,8 +23,9 @@ Then open:
 import os
 from datetime import datetime, timezone
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Form
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import Response
 from pydantic import BaseModel
 from typing import Optional
 
@@ -172,3 +173,33 @@ def list_clips(event_id: int, status: str = "approved"):
 def list_candidates(event_id: int):
     """Admin review queue."""
     return _clips_by_status(event_id, "candidate")
+
+
+# --- Text delivery -----------------------------------------------------
+# PUBLIC_BASE_URL must be set to wherever this app is actually reachable
+# from a fan's phone - e.g. an ngrok URL for testing, or your real domain
+# once this is hosted for real. It can't be 127.0.0.1/localhost, since
+# that only means "this computer" to whoever receives the text.
+PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "http://127.0.0.1:8000")
+
+# Which event a text should point to. Hardcoded to 1 for the pilot - a
+# real multi-event system would map this by phone number, keyword, or
+# whichever event is currently live.
+ACTIVE_EVENT_ID = 1
+
+
+@app.post("/api/sms/inbound")
+async def sms_inbound(Body: str = Form(default=""), From: str = Form(default="")):
+    """
+    This is the URL you point Twilio's "A message comes in" webhook at.
+    Whatever the fan actually texted doesn't matter for the pilot - any
+    text to the number gets the current event's gallery link back.
+    """
+    gallery_url = f"{PUBLIC_BASE_URL}/app/gallery.html?event={ACTIVE_EVENT_ID}"
+    message = f"You made the BIG screen! \U0001F389 Click here to download your Big Screen Moment: {gallery_url}"
+
+    twiml = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        "<Response><Message>" + message + "</Message></Response>"
+    )
+    return Response(content=twiml, media_type="application/xml")
