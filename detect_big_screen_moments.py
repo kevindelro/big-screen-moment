@@ -39,6 +39,7 @@ import subprocess
 import sys
 import urllib.request
 import urllib.error
+import uuid
 
 from scenedetect import open_video, SceneManager
 from scenedetect.detectors import ContentDetector
@@ -261,33 +262,56 @@ def save_clip(video_path, start, duration, out_path, vertical=True, overlay_path
     return True, None
 
 
+def _build_multipart(fields, files):
+    """Builds a multipart/form-data body using only the standard library -
+    avoids adding the 'requests' package as a dependency just for this."""
+    boundary = uuid.uuid4().hex
+    parts = []
+    for key, value in fields.items():
+        parts.append(f"--{boundary}".encode())
+        parts.append(f'Content-Disposition: form-data; name="{key}"'.encode())
+        parts.append(b"")
+        parts.append(str(value).encode())
+    for key, (filename, filedata, content_type) in files.items():
+        parts.append(f"--{boundary}".encode())
+        parts.append(f'Content-Disposition: form-data; name="{key}"; filename="{filename}"'.encode())
+        parts.append(f"Content-Type: {content_type}".encode())
+        parts.append(b"")
+        parts.append(filedata)
+    parts.append(f"--{boundary}--".encode())
+    parts.append(b"")
+    body = b"\r\n".join(parts)
+    return body, f"multipart/form-data; boundary={boundary}"
+
+
 def ingest_clip_to_platform(api_url, event_id, thumb_src, clip_src, duration, index):
     """
-    Copy a generated thumbnail + clip into the running app's thumbnails/
-    and clips/ folders (served at /thumbnails and /clips) and register it
-    with the API as already-approved - no admin review step. This is what
-    makes a detected moment show up straight in the fan gallery.
+    Uploads the actual thumbnail + clip FILES to the running app (not just
+    a local path - the app may be running on a different machine entirely,
+    e.g. hosted on Render) and registers the clip as already-approved -
+    no admin review step. This is what makes a detected moment show up
+    straight in the fan gallery, from anywhere.
     """
-    unique = f"auto_{index:04d}_{abs(hash((thumb_src, clip_src))) % 100000}"
-    thumb_name = f"{unique}.jpg"
-    clip_name = f"{unique}.mp4"
-
-    os.makedirs("thumbnails", exist_ok=True)
-    os.makedirs("clips", exist_ok=True)
-    shutil.copyfile(thumb_src, os.path.join("thumbnails", thumb_name))
-    shutil.copyfile(clip_src, os.path.join("clips", clip_name))
-
-    body = json.dumps({
-        "duration": duration,
-        "thumbnail_path": f"/thumbnails/{thumb_name}",
-        "video_path": f"/clips/{clip_name}",
-        "auto_approve": True,
-    }).encode("utf-8")
-
-    url = f"{api_url}/api/events/{event_id}/clips"
-    req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"}, method="POST")
     try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        with open(thumb_src, "rb") as f:
+            thumb_bytes = f.read()
+        with open(clip_src, "rb") as f:
+            clip_bytes = f.read()
+    except OSError as e:
+        return False, f"couldn't read local file: {e}"
+
+    body, content_type = _build_multipart(
+        fields={"duration": duration, "auto_approve": "true"},
+        files={
+            "thumbnail": (f"clip_{index:04d}.jpg", thumb_bytes, "image/jpeg"),
+            "clip": (f"clip_{index:04d}.mp4", clip_bytes, "video/mp4"),
+        },
+    )
+
+    url = f"{api_url}/api/events/{event_id}/clips/upload"
+    req = urllib.request.Request(url, data=body, headers={"Content-Type": content_type}, method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
             return True, json.loads(resp.read().decode())
     except urllib.error.URLError as e:
         return False, str(e)
@@ -389,3 +413,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
