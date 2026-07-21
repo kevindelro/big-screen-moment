@@ -34,14 +34,14 @@ from typing import Optional
 import db
 
 os.makedirs("static", exist_ok=True)
-os.makedirs("thumbnails", exist_ok=True)
-os.makedirs("clips", exist_ok=True)
+os.makedirs("/data/thumbnails", exist_ok=True)
+os.makedirs("/data/clips", exist_ok=True)
 
 app = FastAPI(title="Big Screen Moment API")
 db.init_db()
 
-app.mount("/data/thumbnails", StaticFiles(directory="/data/thumbnails"), name="/data/thumbnails")
-app.mount("/clips", StaticFiles(directory="clips"), name="clips")
+app.mount("/thumbnails", StaticFiles(directory="/data/thumbnails"), name="thumbnails")
+app.mount("/clips", StaticFiles(directory="/data/clips"), name="clips")
 app.mount("/app", StaticFiles(directory="static", html=True), name="app")
 
 
@@ -178,10 +178,10 @@ async def ingest_clip_upload(
     conn = db.get_conn()
     period_id = find_period_for_timestamp(conn, event_id, timestamp)
     cur = conn.execute(
-        "INSERT INTO /data/clips (event_id, period_id, timestamp, duration, thumbnail_path, "
+        "INSERT INTO clips (event_id, period_id, timestamp, duration, thumbnail_path, "
         "video_path, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        (event_id, period_id, timestamp, duration, f"//data/thumbnails/{thumb_name}",
-         f"//data/clips/{clip_name}", status, timestamp),
+        (event_id, period_id, timestamp, duration, f"/thumbnails/{thumb_name}",
+         f"/clips/{clip_name}", status, timestamp),
     )
     conn.commit()
     clip_id = cur.lastrowid
@@ -189,16 +189,16 @@ async def ingest_clip_upload(
     return {"id": clip_id, "status": status, "period_id": period_id}
 
 
-@app.post("/api/data/clips/{clip_id}/approve")
+@app.post("/api/clips/{clip_id}/approve")
 def approve_clip(clip_id: int):
     conn = db.get_conn()
-    conn.execute("UPDATE /data/clips SET status = 'approved' WHERE id = ?", (clip_id,))
+    conn.execute("UPDATE clips SET status = 'approved' WHERE id = ?", (clip_id,))
     conn.commit()
     conn.close()
     return {"id": clip_id, "status": "approved"}
 
 
-@app.post("/api//data/clips/{clip_id}/reject")
+@app.post("/api/clips/{clip_id}/reject")
 def reject_clip(clip_id: int):
     conn = db.get_conn()
     conn.execute("UPDATE clips SET status = 'rejected' WHERE id = ?", (clip_id,))
