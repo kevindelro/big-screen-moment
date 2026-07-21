@@ -21,12 +21,13 @@ Then open:
 """
 
 import os
+import traceback
 import uuid
 from datetime import datetime, timezone
 
 from fastapi import FastAPI, HTTPException, Form, UploadFile, File
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import Response
+from fastapi.responses import Response, PlainTextResponse
 from pydantic import BaseModel
 from typing import Optional
 
@@ -42,6 +43,20 @@ db.init_db()
 app.mount("/thumbnails", StaticFiles(directory="thumbnails"), name="thumbnails")
 app.mount("/clips", StaticFiles(directory="clips"), name="clips")
 app.mount("/app", StaticFiles(directory="static", html=True), name="app")
+
+
+@app.exception_handler(Exception)
+async def debug_exception_handler(request, exc):
+    """
+    TEMPORARY, for getting this pilot working: returns the real Python
+    error instead of a generic 'Internal Server Error', so it shows up
+    directly wherever the failing request came from (e.g. printed by
+    detect_big_screen_moments.py) instead of needing to dig through
+    Render's dashboard logs. Take this out before this is a real product
+    other people rely on - it can leak internal details.
+    """
+    tb = traceback.format_exc()
+    return PlainTextResponse(f"{type(exc).__name__}: {exc}\n\n{tb}", status_code=500)
 
 
 class EventCreate(BaseModel):
