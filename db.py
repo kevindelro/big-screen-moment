@@ -12,9 +12,15 @@ DB_PATH = "bsm.db"
 
 
 def get_conn():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=15)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
+    # WAL mode lets reads and writes happen at the same time instead of
+    # blocking each other - without it, two uploads landing close together
+    # (very normal once real clips are flowing in) can throw "database is
+    # locked" errors like the one that just happened.
+    conn.execute("PRAGMA journal_mode = WAL")
+    conn.execute("PRAGMA busy_timeout = 15000")
     return conn
 
 
