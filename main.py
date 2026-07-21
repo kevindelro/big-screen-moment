@@ -21,9 +21,10 @@ Then open:
 """
 
 import os
+import uuid
 from datetime import datetime, timezone
 
-from fastapi import FastAPI, HTTPException, Form
+from fastapi import FastAPI, HTTPException, Form, UploadFile, File
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import Response
 from pydantic import BaseModel
@@ -112,7 +113,13 @@ def find_period_for_timestamp(conn, event_id, timestamp):
 def ingest_clip(event_id: int, payload: ClipCreate):
     """What the auto-detector (or a manual fallback button) calls the
     moment it flags a candidate. New clips always start as 'candidate' -
-    nothing reaches the fan gallery until it's approved."""
+    nothing reaches the fan gallery until it's approved.
+
+    NOTE: this endpoint only stores PATHS, not files - it only works when
+    the caller and this server share the same filesystem (e.g. testing
+    locally on one machine). Once the app is hosted somewhere else (like
+    Render), use /api/events/{event_id}/clips/upload instead, which
+    actually sends the file bytes."""
     timestamp = payload.timestamp or now_iso()
     status = "approved" if payload.auto_approve else "candidate"
     conn = db.get_conn()
@@ -122,6 +129,44 @@ def ingest_clip(event_id: int, payload: ClipCreate):
         "video_path, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         (event_id, period_id, timestamp, payload.duration, payload.thumbnail_path,
          payload.video_path, status, now_iso()),
+    )
+    conn.commit()
+    clip_id = cur.lastrowid
+    conn.close()
+    return {"id": clip_id, "status": status, "period_id": period_id}
+
+
+@app.post("/api/events/{event_id}/clips/upload")
+async def ingest_clip_upload(
+    event_id: int,
+    thumbnail: UploadFile = File(...),
+    clip: UploadFile = File(...),
+    duration: float = Form(4.0),
+    auto_approve: bool = Form(False),
+):
+    """Same idea as /clips above, but actually receives and saves the real
+    thumbnail + video FILES - this is what the detector scripts use once
+    they're running on a different machine than this server (the normal
+    case once this is hosted somewhere like Render)."""
+    os.makedirs("thumbnails", exist_ok=True)
+    os.makedirs("clips", exist_ok=True)
+
+    thumb_name = f"{uuid.uuid4().hex}.jpg"
+    clip_name = f"{uuid.uuid4().hex}.mp4"
+    with open(os.path.join("thumbnails", thumb_name), "wb") as f:
+        f.write(await thumbnail.read())
+    with open(os.path.join("clips", clip_name), "wb") as f:
+        f.write(await clip.read())
+
+    timestamp = now_iso()
+    status = "approved" if auto_approve else "candidate"
+    conn = db.get_conn()
+    period_id = find_period_for_timestamp(conn, event_id, timestamp)
+    cur = conn.execute(
+        "INSERT INTO clips (event_id, period_id, timestamp, duration, thumbnail_path, "
+        "video_path, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        (event_id, period_id, timestamp, duration, f"/thumbnails/{thumb_name}",
+         f"/clips/{clip_name}", status, timestamp),
     )
     conn.commit()
     clip_id = cur.lastrowid
