@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Big Screen Moment</title>
+<style>
+  html { background: #050505; }
+  body { margin: 0 auto; max-width: 480px; font-family: -apple-system, sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
+  header { padding: 24px 16px 16px; text-align: center; }
+  header img { width: 190px; max-width: 65%; display: block; margin: 0 auto; }
+  header p {
+    font-size: 13px; letter-spacing: 0.04em; margin: 10px 0 0; font-weight: 600;
+    background: linear-gradient(90deg, #e0349b, #f2833c);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .divider { height: 2px; margin: 16px 16px 0; border-radius: 2px;
+    background: linear-gradient(90deg, #a03cc4, #e0349b, #f2833c); }
+  section { padding: 12px 16px; }
+  section h2 {
+    font-size: 14px; margin: 20px 0 10px; font-weight: 600; letter-spacing: 0.02em;
+    display: inline-block; padding-bottom: 4px;
+    border-bottom: 2px solid #e0349b;
+  }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .card {
+    background: #1a1a1a; border-radius: 10px; overflow: hidden;
+    border: 1px solid #2a2a2a; transition: border-color 0.15s;
+  }
+  .card:active { border-color: #e0349b; }
+  .card img, .card video { width: 100%; display: block; aspect-ratio: 9/16; object-fit: cover; background: #000; }
+  .card .meta { padding: 6px 7px; font-size: 10px; color: #888; }
+  .card .download-btn {
+    display: block; width: 100%; margin-top: 4px; padding: 6px 4px;
+    border: none; border-radius: 6px; text-align: center; text-decoration: none;
+    font-size: 10px; font-weight: 600; color: #fff; cursor: pointer;
+    background: linear-gradient(90deg, #e0349b, #f2833c);
+  }
+  .empty { text-align: center; color: #777; padding: 60px 16px; font-size: 14px; }
+  footer { text-align: center; padding: 30px 16px 40px; font-size: 11px; color: #555; }
+</style>
+</head>
+<body>
+  <header>
+    <img src="/app/logo.png" alt="Big Screen Moment">
+    <p>Find your moment below</p>
+  </header>
+  <div class="divider"></div>
+  <div id="content"><div class="empty">Loading...</div></div>
+  <footer>Big Screen Moment &middot; You were there. We captured it.</footer>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const eventId = params.get("event") || "1";
+
+async function load() {
+  const res = await fetch(`/api/events/${eventId}/clips?status=approved`);
+  const grouped = await res.json();
+  const content = document.getElementById("content");
+
+  // Auto-detected clips that don't have a quarter/period assigned yet show
+  // in their own section at the very top, ahead of the quarters.
+  let periods = Object.keys(grouped).filter(p => p !== "Ungrouped");
+  if (grouped["Ungrouped"]) {
+    grouped["New moments"] = grouped["Ungrouped"];
+    periods = ["New moments", ...periods];
+  }
+
+  if (periods.length === 0) {
+    content.innerHTML = '<div class="empty">No clips yet for this event.</div>';
+    return;
+  }
+
+  content.innerHTML = periods.map(period => `
+    <section>
+      <h2>${period}</h2>
+      <div class="grid">
+        ${grouped[period].map(clip => `
+          <div class="card">
+            ${clip.video_path
+              ? `<video src="${clip.video_path}" poster="${clip.thumbnail_path || ''}" controls playsinline preload="metadata"></video>`
+              : `<img src="${clip.thumbnail_path || ''}" alt="Big screen moment">`}
+            <div class="meta">
+              <span>${new Date(clip.timestamp).toLocaleTimeString()}</span>
+              ${clip.video_path ? `<a class="download-btn" href="${clip.video_path}" download>Download to phone</a>` : ""}
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    </section>
+  `).join("");
+}
+
+load();
+</script>
+</body>
+</html>

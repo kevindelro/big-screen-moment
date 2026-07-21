@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Big Screen Moment - Admin</title>
+<style>
+  body { margin: 0; font-family: -apple-system, sans-serif; background: #f5f5f4; color: #222; }
+  header { padding: 16px; background: #fff; border-bottom: 1px solid #ddd; }
+  header h1 { font-size: 18px; margin: 0; }
+  main { padding: 16px; max-width: 720px; margin: 0 auto; }
+  .period-form { display: flex; gap: 8px; margin-bottom: 20px; }
+  .period-form input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 6px; }
+  .period-form button { padding: 8px 14px; border: none; border-radius: 6px; background: #222; color: #fff; }
+  .row { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid #e0e0e0;
+         border-radius: 10px; padding: 10px; margin-bottom: 10px; }
+  .row img { width: 90px; aspect-ratio: 16/9; object-fit: cover; border-radius: 6px; }
+  .row .info { flex: 1; font-size: 13px; color: #555; }
+  .row button { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; }
+  .approve { background: #1d9e75; color: #fff; }
+  .reject { background: #d85a30; color: #fff; }
+  .empty { color: #888; font-size: 14px; }
+</style>
+</head>
+<body>
+<header><h1>Review queue</h1></header>
+<main>
+  <div class="period-form">
+    <input id="periodLabel" placeholder="e.g. 2nd Quarter">
+    <button onclick="markPeriod()">Mark period start</button>
+  </div>
+  <div id="queue"><p class="empty">Loading...</p></div>
+</main>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const eventId = params.get("event") || "1";
+
+async function load() {
+  const res = await fetch(`/api/events/${eventId}/candidates`);
+  const grouped = await res.json();
+  const queue = document.getElementById("queue");
+  const clips = Object.values(grouped).flat();
+
+  if (clips.length === 0) {
+    queue.innerHTML = '<p class="empty">No candidates waiting for review.</p>';
+    return;
+  }
+
+  queue.innerHTML = clips.map(clip => `
+    <div class="row" id="clip-${clip.id}">
+      <img src="${clip.thumbnail_path || ''}" alt="candidate">
+      <div class="info">${new Date(clip.timestamp).toLocaleTimeString()} &middot; ${clip.duration}s hold</div>
+      <button class="approve" onclick="decide(${clip.id}, 'approve')">Approve</button>
+      <button class="reject" onclick="decide(${clip.id}, 'reject')">Reject</button>
+    </div>
+  `).join("");
+}
+
+async function decide(clipId, action) {
+  await fetch(`/api/clips/${clipId}/${action}`, { method: "POST" });
+  document.getElementById(`clip-${clipId}`).remove();
+}
+
+async function markPeriod() {
+  const label = document.getElementById("periodLabel").value.trim();
+  if (!label) return;
+  await fetch(`/api/events/${eventId}/periods`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ label }),
+  });
+  document.getElementById("periodLabel").value = "";
+  alert(`Marked start of "${label}"`);
+}
+
+load();
+</script>
+</body>
+</html>
