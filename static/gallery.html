@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Big Screen Moment</title>
+<meta property="og:title" content="Big Screen Moment">
+<meta property="og:description" content="You were there. We captured it.">
+<meta property="og:image" content="https://big-screen-moment.onrender.com/app/logo.png">
+<meta property="og:url" content="https://big-screen-moment.onrender.com/app/gallery.html">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   html { background: #050505; }
   body { margin: 0 auto; max-width: 480px; font-family: -apple-system, sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
@@ -51,60 +56,4 @@
 
 <script>
 const params = new URLSearchParams(window.location.search);
-const eventId = params.get("event") || "1";
-
-async function shareClip(videoPath) {
-  try {
-    const res = await fetch(videoPath);
-    const blob = await res.blob();
-    const file = new File([blob], "bigscreenmoment.mp4", { type: "video/mp4" });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file] });
-    } else {
-      window.location.href = videoPath;
-    }
-  } catch (err) {
-    window.location.href = videoPath;
-  }
-}
-
-async function load() {
-  const res = await fetch(`/api/events/${eventId}/clips?status=approved`);
-  const grouped = await res.json();
-  const content = document.getElementById("content");
-
-  let periods = Object.keys(grouped).filter(p => p !== "Ungrouped");
-  if (grouped["Ungrouped"]) {
-    grouped["New moments"] = grouped["Ungrouped"];
-    periods = ["New moments", ...periods];
-  }
-
-  if (periods.length === 0) {
-    content.innerHTML = '<div class="empty">No clips yet for this event.</div>';
-    return;
-  }
-
-  content.innerHTML = periods.map(period => `
-    <section>
-      <h2>${period}</h2>
-      <div class="grid">
-        ${grouped[period].map(clip => `
-          <div class="card">
-            ${clip.video_path
-              ? `<video src="${clip.video_path}" poster="${clip.thumbnail_path || ''}" controls playsinline preload="metadata"></video>`
-              : `<img src="${clip.thumbnail_path || ''}" alt="Big screen moment">`}
-            <div class="meta">
-              <span>${new Date(clip.timestamp).toLocaleTimeString()}</span>
-              ${clip.video_path ? `<button class="download-btn" onclick="shareClip('${clip.video_path}')">Save to Photos</button>` : ""}
-            </div>
-          </div>
-        `).join("")}
-      </div>
-    </section>
-  `).join("");
-}
-
-load();
-</script>
-</body>
-</html>
+const eventId = params.get("event") ||
