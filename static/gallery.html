@@ -53,13 +53,26 @@
 const params = new URLSearchParams(window.location.search);
 const eventId = params.get("event") || "1";
 
+async function shareClip(videoPath) {
+  try {
+    const res = await fetch(videoPath);
+    const blob = await res.blob();
+    const file = new File([blob], "bigscreenmoment.mp4", { type: "video/mp4" });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file] });
+    } else {
+      window.location.href = videoPath;
+    }
+  } catch (err) {
+    window.location.href = videoPath;
+  }
+}
+
 async function load() {
   const res = await fetch(`/api/events/${eventId}/clips?status=approved`);
   const grouped = await res.json();
   const content = document.getElementById("content");
 
-  // Auto-detected clips that don't have a quarter/period assigned yet show
-  // in their own section at the very top, ahead of the quarters.
   let periods = Object.keys(grouped).filter(p => p !== "Ungrouped");
   if (grouped["Ungrouped"]) {
     grouped["New moments"] = grouped["Ungrouped"];
@@ -82,7 +95,7 @@ async function load() {
               : `<img src="${clip.thumbnail_path || ''}" alt="Big screen moment">`}
             <div class="meta">
               <span>${new Date(clip.timestamp).toLocaleTimeString()}</span>
-              ${clip.video_path ? `<a class="download-btn" href="${clip.video_path}" download>Download to phone</a>` : ""}
+              ${clip.video_path ? `<button class="download-btn" onclick="shareClip('${clip.video_path}')">Save to Photos</button>` : ""}
             </div>
           </div>
         `).join("")}
