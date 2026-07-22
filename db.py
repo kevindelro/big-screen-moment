@@ -6,6 +6,7 @@ production-scale system yet.
 """
 import os
 import sqlite3
+from contextlib import contextmanager
 
 DB_PATH = os.environ.get("DB_PATH", "bsm.db")
 
@@ -19,35 +20,46 @@ def get_conn():
     return conn
 
 
-def init_db():
+@contextmanager
+def conn_scope():
+    """Always closes the connection, even if the code using it crashes -
+    prevents a failed request from leaving the database locked for
+    every request that comes after it."""
     conn = get_conn()
-    conn.executescript(
-        """
-        CREATE TABLE IF NOT EXISTS events (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            venue TEXT,
-            created_at TEXT NOT NULL
-        );
-        CREATE TABLE IF NOT EXISTS periods (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            event_id INTEGER NOT NULL REFERENCES events(id),
-            label TEXT NOT NULL,
-            start_time TEXT NOT NULL,
-            end_time TEXT
-        );
-        CREATE TABLE IF NOT EXISTS clips (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            event_id INTEGER NOT NULL REFERENCES events(id),
-            period_id INTEGER REFERENCES periods(id),
-            timestamp TEXT NOT NULL,
-            duration REAL,
-            thumbnail_path TEXT,
-            video_path TEXT,
-            status TEXT NOT NULL DEFAULT 'candidate',
-            created_at TEXT NOT NULL
-        );
-        """
-    )
-    conn.commit()
-    conn.close()
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+
+def init_db():
+    with conn_scope() as conn:
+        conn.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                venue TEXT,
+                created_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS periods (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_id INTEGER NOT NULL REFERENCES events(id),
+                label TEXT NOT NULL,
+                start_time TEXT NOT NULL,
+                end_time TEXT
+            );
+            CREATE TABLE IF NOT EXISTS clips (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_id INTEGER NOT NULL REFERENCES events(id),
+                period_id INTEGER REFERENCES periods(id),
+                timestamp TEXT NOT NULL,
+                duration REAL,
+                thumbnail_path TEXT,
+                video_path TEXT,
+                status TEXT NOT NULL DEFAULT 'candidate',
+                created_at TEXT NOT NULL
+            );
+            """
+        )
+        conn.commit()
