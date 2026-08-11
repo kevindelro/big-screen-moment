@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Big Screen Moment</title>
+<meta name="description" content="You were there. We captured it. Big Screen Moment is coming soon.">
+<meta property="og:title" content="Big Screen Moment">
+<meta property="og:description" content="You were there. We captured it.">
+<meta property="og:image" content="/app/logo.png">
+<meta property="og:url" content="https://bigscreenmoment.com">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root{
+    --bg:#050505; --bg2:#0a0a0a;
+    --purple:#a03cc4; --pink:#e0349b; --orange:#f2833c;
+    --white:#ffffff; --muted:#8a8a8f; --card:#131316; --border:#232327;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:var(--bg); color:var(--white);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    min-height:100vh; overflow-x:hidden; position:relative;
+  }
+
+  /* Diagonal brand glow, anchored bottom-right, matching brand system */
+  .glow{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(600px 480px at 88% 92%, rgba(242,131,60,0.28), transparent 60%),
+      radial-gradient(680px 560px at 70% 78%, rgba(224,52,155,0.24), transparent 62%),
+      radial-gradient(720px 620px at 55% 60%, rgba(160,60,196,0.16), transparent 65%);
+  }
+  .grain{
+    position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0.035; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  main{
+    position:relative; z-index:1;
+    min-height:100vh; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    text-align:center; padding:32px 24px 56px;
+  }
+
+  .capture{
+    position:relative; width:220px; height:220px; margin-bottom:8px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .ring{
+    position:absolute; border-radius:50%;
+    border:1px solid rgba(224,52,155,0.55);
+    animation:pulse 3.6s cubic-bezier(.2,.6,.3,1) infinite;
+    opacity:0;
+  }
+  .ring.r2{ animation-delay:1.2s; border-color:rgba(242,131,60,0.5); }
+  .ring.r3{ animation-delay:2.4s; border-color:rgba(160,60,196,0.5); }
+  @keyframes pulse{
+    0%{ width:40px; height:40px; opacity:0.85; }
+    75%{ opacity:0; }
+    100%{ width:220px; height:220px; opacity:0; }
+  }
+  .dot{
+    width:10px; height:10px; border-radius:50%;
+    background:linear-gradient(135deg,var(--pink),var(--orange));
+    box-shadow:0 0 22px 4px rgba(224,52,155,0.55);
+  }
+
+  .eyebrow{
+    letter-spacing:0.22em; text-transform:uppercase;
+    font-size:11px; color:var(--muted); margin:22px 0 18px; font-weight:600;
+  }
+
+  .wordmark{
+    font-size:clamp(34px, 6vw, 58px); font-weight:800; line-height:1.05;
+    letter-spacing:-0.01em; margin:0;
+  }
+  .wordmark .accent{
+    background:linear-gradient(90deg,var(--purple),var(--pink) 55%,var(--orange));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+
+  .tagline{
+    margin:16px 0 0; font-size:16px; color:var(--muted); font-style:italic;
+  }
+
+  .divider{
+    width:64px; height:2px; margin:28px 0; border-radius:2px;
+    background:linear-gradient(90deg,var(--purple),var(--pink),var(--orange));
+  }
+
+  .blurb{
+    max-width:480px; font-size:15px; line-height:1.6; color:#c9c9cd; margin:0 0 34px;
+  }
+  .blurb strong{ color:var(--white); font-weight:600; }
+
+  .badge{
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid var(--border); background:var(--card);
+    padding:9px 16px; border-radius:999px; font-size:12px; color:var(--muted);
+    letter-spacing:0.03em; margin-bottom:40px;
+  }
+  .badge b{ color:var(--orange); font-weight:700; letter-spacing:0.06em; }
+
+  .contact{
+    font-size:14px; color:var(--muted);
+  }
+  .contact a{
+    color:var(--white); text-decoration:none; border-bottom:1px solid var(--border);
+    padding-bottom:2px; transition:border-color .15s ease, color .15s ease;
+  }
+  .contact a:hover{ color:var(--pink); border-color:var(--pink); }
+
+  footer{
+    position:relative; z-index:1;
+    text-align:center; padding:0 16px 28px; font-size:11px; color:#4d4d52;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .ring{ animation:none; opacity:0.25; }
+    .ring.r1{ width:120px; height:120px; }
+    .ring.r2{ width:170px; height:170px; }
+    .ring.r3{ width:220px; height:220px; }
+  }
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="grain"></div>
+
+  <main>
+    <div class="capture">
+      <div class="ring r1"></div>
+      <div class="ring r2"></div>
+      <div class="ring r3"></div>
+      <div class="dot"></div>
+    </div>
+
+    <p class="eyebrow">Big Screen Moment</p>
+    <h1 class="wordmark">Something worth<br><span class="accent">keeping</span> is coming.</h1>
+    <p class="tagline">You were there. We captured it.</p>
+
+    <div class="divider"></div>
+
+    <p class="blurb">
+      We're building the fan-experience platform for live sports and entertainment —
+      turning your <strong>big-screen moment</strong> into a clip you actually get to keep.
+      No app. No search. Just a text.
+    </p>
+
+    <div class="badge"><b>PATENT PENDING</b> &middot; currently piloting with live venues</div>
+
+    <p class="contact">Own a venue, or want an early look? <a href="mailto:kevin.delrosario8@gmail.com">Get in touch</a></p>
+  </main>
+
+  <footer>&copy; 2026 Big Screen Moment. All rights reserved.</footer>
+</body>
+</html>
