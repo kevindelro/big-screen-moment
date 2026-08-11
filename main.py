@@ -27,7 +27,7 @@ from datetime import datetime, timezone
 
 from fastapi import FastAPI, HTTPException, Form, UploadFile, File
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import Response, PlainTextResponse
+from fastapi.responses import Response, PlainTextResponse, FileResponse
 from pydantic import BaseModel
 from typing import Optional
 
@@ -39,6 +39,12 @@ os.makedirs("/data/clips", exist_ok=True)
 
 app = FastAPI(title="Big Screen Moment API")
 db.init_db()
+
+
+@app.get("/")
+def home():
+    return FileResponse("static/coming_soon.html")
+
 
 app.mount("/thumbnails", StaticFiles(directory="/data/thumbnails"), name="thumbnails")
 app.mount("/clips", StaticFiles(directory="/data/clips"), name="clips")
