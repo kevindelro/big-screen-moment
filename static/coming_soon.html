@@ -23,7 +23,6 @@
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     min-height:100vh; overflow-x:hidden; position:relative;
   }
-
   .glow{
     position:fixed; inset:0; z-index:0; pointer-events:none;
     background:
@@ -35,14 +34,12 @@
     position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0.035; mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
-
   main{
     position:relative; z-index:1;
     display:flex; flex-direction:column;
     align-items:center;
     text-align:center; padding:64px 24px 0;
   }
-
   .capture{
     position:relative; width:160px; height:160px; margin-bottom:0;
     display:flex; align-items:center; justify-content:center;
@@ -65,12 +62,10 @@
     background:linear-gradient(135deg,var(--pink),var(--orange));
     box-shadow:0 0 22px 4px rgba(224,52,155,0.55);
   }
-
   .eyebrow{
     letter-spacing:0.22em; text-transform:uppercase;
     font-size:11px; color:var(--muted); margin:18px 0 18px; font-weight:600;
   }
-
   .wordmark{
     font-size:clamp(32px, 5.5vw, 54px); font-weight:800; line-height:1.05;
     letter-spacing:-0.01em; margin:0;
@@ -79,20 +74,16 @@
     background:linear-gradient(90deg,var(--purple),var(--pink) 55%,var(--orange));
     -webkit-background-clip:text; background-clip:text; color:transparent;
   }
-
   .tagline{
     margin:16px 0 0; font-size:16px; color:var(--muted); font-style:italic;
   }
-
   .divider{
     width:64px; height:2px; margin:28px 0; border-radius:2px;
     background:linear-gradient(90deg,var(--purple),var(--pink),var(--orange));
   }
-
   .blurb{
     max-width:480px; font-size:15px; line-height:1.6; color:#c9c9cd; margin:0 0 8px;
   }
-
   .badge{
     display:inline-flex; align-items:center; gap:8px;
     border:1px solid var(--border); background:var(--card);
@@ -100,8 +91,6 @@
     letter-spacing:0.03em; margin:26px 0 64px;
   }
   .badge b{ color:var(--orange); font-weight:700; letter-spacing:0.06em; }
-
-  /* Benefits — speaks to teams / venues / partners, not fans */
   .benefits{
     width:100%; max-width:920px; margin:0 auto 72px;
     display:grid; grid-template-columns:repeat(3, 1fr); gap:20px;
@@ -137,7 +126,6 @@
   .benefit p{
     font-size:13.5px; line-height:1.6; color:var(--muted); margin:0;
   }
-
   .contact{
     font-size:15px; color:#c9c9cd; margin-bottom:72px;
   }
@@ -151,7 +139,6 @@
     transition:transform .15s ease, box-shadow .15s ease;
   }
   .contact a:hover{ transform:translateY(-2px); box-shadow:0 14px 34px -8px rgba(224,52,155,0.75), inset 0 1px 0 rgba(255,255,255,0.3); }
-
   footer{
     position:relative; z-index:1;
     border-top:1px solid var(--border);
@@ -172,12 +159,10 @@
   .copyright{
     font-size:11px; color:#4d4d52; text-align:center;
   }
-
   @media (max-width: 720px){
     .benefits{ grid-template-columns:1fr; }
     .benefit{ transform:none !important; }
   }
-
   @media (prefers-reduced-motion: reduce){
     .ring{ animation:none; opacity:0.25; }
     .ring.r1{ width:60px; height:60px; }
@@ -189,7 +174,6 @@
 <body>
   <div class="glow"></div>
   <div class="grain"></div>
-
   <main>
     <div class="capture">
       <div class="ring r1"></div>
@@ -197,19 +181,14 @@
       <div class="ring r3"></div>
       <div class="dot"></div>
     </div>
-
     <p class="eyebrow">Big Screen Moment</p>
     <h1 class="wordmark">Something worth<br><span class="accent">keeping</span> is coming.</h1>
     <p class="tagline">You were there. We captured it.</p>
-
     <div class="divider"></div>
-
     <p class="blurb">
-      We're building the fan-experience platform for live sports and entertainment.
+      A new way for fans to remember and share their big screen moment.
     </p>
-
     <div class="badge"><b>PATENT PENDING</b> &middot; currently piloting</div>
-
     <div class="benefits">
       <div class="benefit card-1">
         <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
@@ -230,12 +209,10 @@
         <p>Plugs directly into the experience you already have. No new hardware, no new systems, no added staff.</p>
       </div>
     </div>
-
     <p class="contact">Curious how this could work at your next live event?<br>
       <a href="mailto:kevin.delrosario8@gmail.com?subject=Big%20Screen%20Moment%20-%20Pilot%20Partner">Become a Pilot Partner</a>
     </p>
   </main>
-
   <footer>
     <div class="footer-inner">
       <div class="footer-links">
