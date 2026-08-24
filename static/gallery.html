@@ -41,6 +41,13 @@
     font-size: 10px; font-weight: 600; color: #fff; cursor: pointer;
     background: linear-gradient(90deg, #e0349b, #f2833c);
   }
+  .share-row { display: flex; gap: 6px; margin-top: 4px; }
+  .share-btn {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 7px 0; border-radius: 6px; border: 1px solid #2f2f2f;
+    background: #1f1f1f; text-decoration: none; cursor: pointer;
+  }
+  .share-btn svg { width: 16px; height: 16px; display: block; }
   .empty { text-align: center; color: #777; padding: 60px 16px; font-size: 14px; }
   footer { text-align: center; padding: 30px 16px 40px; font-size: 11px; color: #555; }
 </style>
@@ -73,6 +80,14 @@ async function shareClip(videoPath) {
   }
 }
 
+async function platformShare(videoPath, platform, clipId) {
+  // Track which platform the fan intended to share to, before handing off
+  // to the OS share sheet (we can't know if they completed the post, but
+  // this tap itself is real, useful data for sponsor reporting).
+  fetch(`/api/clips/share-intent?platform=${platform}&clip_id=${clipId}`, { method: "POST" }).catch(() => {});
+  await shareClip(videoPath);
+}
+
 async function load() {
   const res = await fetch(`/api/events/${eventId}/clips?status=approved`);
   const grouped = await res.json();
@@ -101,6 +116,29 @@ async function load() {
             <div class="meta">
               <span>${new Date(clip.timestamp).toLocaleTimeString()}</span>
               ${clip.video_path ? `<button class="download-btn" onclick="shareClip('${clip.video_path}')">Save to Photos</button>` : ""}
+              ${clip.video_path ? `
+              <div class="share-row">
+                <a class="share-btn" title="Share to Instagram" onclick="platformShare('${clip.video_path}','instagram',${clip.id})">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <defs>
+                      <linearGradient id="igGrad-${clip.id}" x1="0" y1="24" x2="24" y2="0">
+                        <stop offset="0" stop-color="#FEDA75"/>
+                        <stop offset="0.35" stop-color="#D62976"/>
+                        <stop offset="0.65" stop-color="#962FBF"/>
+                        <stop offset="1" stop-color="#4F5BD5"/>
+                      </linearGradient>
+                    </defs>
+                    <rect x="2" y="2" width="20" height="20" rx="6" stroke="url(#igGrad-${clip.id})" stroke-width="2"/>
+                    <circle cx="12" cy="12" r="4.2" stroke="url(#igGrad-${clip.id})" stroke-width="2"/>
+                    <circle cx="17.3" cy="6.7" r="1.15" fill="url(#igGrad-${clip.id})"/>
+                  </svg>
+                </a>
+                <a class="share-btn" title="Share to TikTok" onclick="platformShare('${clip.video_path}','tiktok',${clip.id})">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M16.6 3c.4 2.1 1.9 3.7 4.1 3.9v2.9c-1.5.1-2.9-.4-4.1-1.2v6.6c0 3.2-2.6 5.6-5.7 5.4-2.8-.2-5-2.5-5-5.3 0-2.9 2.4-5.3 5.3-5.3.3 0 .6 0 .9.1v3c-.3-.1-.6-.2-.9-.2-1.3 0-2.4 1.1-2.4 2.4s1.1 2.4 2.4 2.4c1.4 0 2.6-1.1 2.6-2.6V3h2.8z" fill="#fff"/>
+                  </svg>
+                </a>
+              </div>` : ""}
             </div>
           </div>
         `).join("")}
