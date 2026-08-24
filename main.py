@@ -11,6 +11,7 @@ Covers the whole loop except real video capture/detection:
   - fans fetch the approved gallery for an event, grouped by period
   - log share-intent taps (which platform button a fan tapped on a clip),
     for sponsor reporting on reach/engagement
+  - serve the public coming-soon landing page at the bare domain root
 
 Run it:
     pip install fastapi "uvicorn[standard]" pillow
@@ -29,7 +30,7 @@ from datetime import datetime, timezone
 
 from fastapi import FastAPI, HTTPException, Form, UploadFile, File
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import Response, PlainTextResponse
+from fastapi.responses import Response, PlainTextResponse, FileResponse
 from pydantic import BaseModel
 from typing import Optional
 
@@ -65,6 +66,15 @@ _conn.close()
 app.mount("/thumbnails", StaticFiles(directory="/data/thumbnails"), name="thumbnails")
 app.mount("/clips", StaticFiles(directory="/data/clips"), name="clips")
 app.mount("/app", StaticFiles(directory="static", html=True), name="app")
+
+
+@app.get("/")
+def root():
+    """The bare public domain (bigscreenmoment.com) shows the coming-soon
+    landing page. Fans coming from an SMS link go straight to
+    /app/gallery.html instead - this route is just for anyone who visits
+    the domain directly."""
+    return FileResponse("static/coming_soon.html")
 
 
 @app.exception_handler(Exception)
