@@ -9,6 +9,8 @@ Covers the whole loop except real video capture/detection:
     manual fallback, would call the moment it flags something)
   - admin approves/rejects candidates
   - fans fetch the approved gallery for an event, grouped by period
+  - log share-intent taps (which platform button a fan tapped on a clip),
+    for sponsor reporting on reach/engagement
 
 Run it:
     pip install fastapi "uvicorn[standard]" pillow
@@ -27,7 +29,7 @@ from datetime import datetime, timezone
 
 from fastapi import FastAPI, HTTPException, Form, UploadFile, File
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import Response, PlainTextResponse, FileResponse
+from fastapi.responses import Response, PlainTextResponse
 from pydantic import BaseModel
 from typing import Optional
 
@@ -40,11 +42,25 @@ os.makedirs("/data/clips", exist_ok=True)
 app = FastAPI(title="Big Screen Moment API")
 db.init_db()
 
-
-@app.get("/")
-def home():
-    return FileResponse("static/coming_soon.html")
-
+# Share-intent tracking: which platform button a fan tapped on a clip,
+# right before handing off to the phone's native share sheet. We can't
+# know whether they completed the post once it leaves the browser, but
+# the tap itself is real, useful data for sponsor reporting - created
+# here directly (rather than in db.py's init_db) so this table exists
+# even on a database that was set up before this feature was added.
+_conn = db.get_conn()
+_conn.execute(
+    """
+    CREATE TABLE IF NOT EXISTS share_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        clip_id INTEGER,
+        platform TEXT NOT NULL,
+        created_at TEXT NOT NULL
+    )
+    """
+)
+_conn.commit()
+_conn.close()
 
 app.mount("/thumbnails", StaticFiles(directory="/data/thumbnails"), name="thumbnails")
 app.mount("/clips", StaticFiles(directory="/data/clips"), name="clips")
@@ -213,12 +229,44 @@ def reject_clip(clip_id: int):
     return {"id": clip_id, "status": "rejected"}
 
 
+@app.post("/api/clips/share-intent")
+def log_share_intent(platform: str, clip_id: Optional[int] = None):
+    """Called by gallery.html the moment a fan taps a platform share button
+    (Instagram, TikTok, etc.), right before the native OS share sheet opens.
+    This can't confirm the fan actually completed the post, but the tap
+    itself is real signal - which clips and which platforms fans are most
+    motivated to share to, useful for sponsor reporting."""
+    conn = db.get_conn()
+    conn.execute(
+        "INSERT INTO share_events (clip_id, platform, created_at) VALUES (?, ?, ?)",
+        (clip_id, platform, now_iso()),
+    )
+    conn.commit()
+    conn.close()
+    return {"ok": True}
+
+
+@app.get("/api/events/{event_id}/share-stats")
+def share_stats(event_id: int):
+    """Quick rollup for sponsor reporting: total share-intent taps per
+    platform, for clips belonging to this event."""
+    conn = db.get_conn()
+    rows = conn.execute(
+        "SELECT share_events.platform, COUNT(*) AS taps "
+        "FROM share_events JOIN clips ON clips.id = share_events.clip_id "
+        "WHERE clips.event_id = ? GROUP BY share_events.platform",
+        (event_id,),
+    ).fetchall()
+    conn.close()
+    return {row["platform"]: row["taps"] for row in rows}
+
+
 def _clips_by_status(event_id: int, status: str):
     conn = db.get_conn()
     rows = conn.execute(
         "SELECT clips.*, periods.label AS period_label FROM clips "
         "LEFT JOIN periods ON clips.period_id = periods.id "
-        "WHERE clips.event_id = ? AND clips.status = ? ORDER BY clips.timestamp",
+        "WHERE clips.event_id = ? AND clips.status = ? ORDER BY clips.timestamp DESC",
         (event_id, status),
     ).fetchall()
     conn.close()
