@@ -1,228 +1,395 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Big Screen Moment</title>
-<meta name="description" content="You were there. We captured it. Big Screen Moment is coming soon.">
-<meta property="og:title" content="Big Screen Moment">
-<meta property="og:description" content="You were there. We captured it.">
-<meta property="og:image" content="/app/logo.png">
-<meta property="og:url" content="https://bigscreenmoment.com">
-<meta name="twitter:card" content="summary_large_image">
-<style>
-  :root{
-    --bg:#050505; --bg2:#0a0a0a;
-    --purple:#a03cc4; --pink:#e0349b; --orange:#f2833c;
-    --white:#ffffff; --muted:#8a8a8f; --card:#131316; --border:#232327;
-  }
-  *{box-sizing:border-box;}
-  html,body{height:100%;}
-  body{
-    margin:0; background:var(--bg); color:var(--white);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    min-height:100vh; overflow-x:hidden; position:relative;
-  }
-  .glow{
-    position:fixed; inset:0; z-index:0; pointer-events:none;
-    background:
-      radial-gradient(600px 480px at 88% 8%, rgba(242,131,60,0.24), transparent 60%),
-      radial-gradient(680px 560px at 70% 20%, rgba(224,52,155,0.20), transparent 62%),
-      radial-gradient(720px 620px at 20% 90%, rgba(160,60,196,0.14), transparent 65%);
-  }
-  .grain{
-    position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0.035; mix-blend-mode:overlay;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-  main{
-    position:relative; z-index:1;
-    display:flex; flex-direction:column;
-    align-items:center;
-    text-align:center; padding:64px 24px 0;
-  }
-  .capture{
-    position:relative; width:160px; height:160px; margin-bottom:0;
-    display:flex; align-items:center; justify-content:center;
-  }
-  .ring{
-    position:absolute; border-radius:50%;
-    border:1px solid rgba(224,52,155,0.55);
-    animation:pulse 3.6s cubic-bezier(.2,.6,.3,1) infinite;
-    opacity:0;
-  }
-  .ring.r2{ animation-delay:1.2s; border-color:rgba(242,131,60,0.5); }
-  .ring.r3{ animation-delay:2.4s; border-color:rgba(160,60,196,0.5); }
-  @keyframes pulse{
-    0%{ width:24px; height:24px; opacity:0.85; }
-    75%{ opacity:0; }
-    100%{ width:100px; height:100px; opacity:0; }
-  }
-  .dot{
-    width:9px; height:9px; border-radius:50%;
-    background:linear-gradient(135deg,var(--pink),var(--orange));
-    box-shadow:0 0 22px 4px rgba(224,52,155,0.55);
-  }
-  .eyebrow{
-    letter-spacing:0.22em; text-transform:uppercase;
-    font-size:11px; color:var(--muted); margin:18px 0 18px; font-weight:600;
-  }
-  .wordmark{
-    font-size:clamp(32px, 5.5vw, 54px); font-weight:800; line-height:1.05;
-    letter-spacing:-0.01em; margin:0;
-  }
-  .wordmark .accent{
-    background:linear-gradient(90deg,var(--purple),var(--pink) 55%,var(--orange));
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-  }
-  .tagline{
-    margin:16px 0 0; font-size:16px; color:var(--muted); font-style:italic;
-  }
-  .divider{
-    width:64px; height:2px; margin:28px 0; border-radius:2px;
-    background:linear-gradient(90deg,var(--purple),var(--pink),var(--orange));
-  }
-  .blurb{
-    max-width:480px; font-size:15px; line-height:1.6; color:#c9c9cd; margin:0 0 8px;
-  }
-  .badge{
-    display:inline-flex; align-items:center; gap:8px;
-    border:1px solid var(--border); background:var(--card);
-    padding:9px 16px; border-radius:999px; font-size:12px; color:var(--muted);
-    letter-spacing:0.03em; margin:26px 0 64px;
-  }
-  .badge b{ color:var(--orange); font-weight:700; letter-spacing:0.06em; }
-  .benefits{
-    width:100%; max-width:920px; margin:0 auto 72px;
-    display:grid; grid-template-columns:repeat(3, 1fr); gap:20px;
-  }
-  .benefit{
-    position:relative; overflow:hidden;
-    background:var(--card); border:1px solid var(--border); border-radius:14px;
-    padding:30px 24px 26px; text-align:left;
-    transition:transform .25s ease, border-color .25s ease, box-shadow .25s ease;
-  }
-  .benefit::before{
-    content:""; position:absolute; top:0; left:0; right:0; height:3px;
-    background:var(--accent-grad);
-  }
-  .benefit:hover{
-    transform:translateY(-6px) rotate(0deg) !important;
-    border-color:var(--accent);
-    box-shadow:0 18px 40px -14px var(--accent-shadow);
-  }
-  .benefit.card-1{ --accent:#c15fe0; --accent-grad:linear-gradient(90deg,#a03cc4,#e0349b); --accent-shadow:rgba(160,60,196,0.4); transform:rotate(-0.6deg); }
-  .benefit.card-2{ --accent:#e0349b; --accent-grad:linear-gradient(90deg,#e0349b,#f2833c); --accent-shadow:rgba(224,52,155,0.4); }
-  .benefit.card-3{ --accent:#f2833c; --accent-grad:linear-gradient(90deg,#f2833c,#e0349b); --accent-shadow:rgba(242,131,60,0.4); transform:rotate(0.6deg); }
-  .benefit .icon{
-    width:32px; height:32px; margin-bottom:16px; color:var(--accent);
-  }
-  .benefit .icon svg{ width:100%; height:100%; }
-  .benefit .num{
-    font-size:11px; font-weight:700; letter-spacing:0.1em; color:var(--accent); margin-bottom:10px;
-  }
-  .benefit h3{
-    font-size:16.5px; font-weight:800; margin:0 0 10px; letter-spacing:-0.015em; color:var(--white);
-  }
-  .benefit p{
-    font-size:13.5px; line-height:1.6; color:var(--muted); margin:0;
-  }
-  .contact{
-    font-size:15px; color:#c9c9cd; margin-bottom:72px;
-  }
-  .contact a{
-    display:inline-block; margin-top:20px;
-    color:#ffffff; background:linear-gradient(90deg,var(--purple),var(--pink),var(--orange));
-    text-decoration:none; font-weight:800; font-size:14px;
-    text-transform:uppercase; letter-spacing:0.06em;
-    padding:16px 36px; border-radius:999px;
-    box-shadow:0 10px 28px -8px rgba(224,52,155,0.6), inset 0 1px 0 rgba(255,255,255,0.25);
-    transition:transform .15s ease, box-shadow .15s ease;
-  }
-  .contact a:hover{ transform:translateY(-2px); box-shadow:0 14px 34px -8px rgba(224,52,155,0.75), inset 0 1px 0 rgba(255,255,255,0.3); }
-  footer{
-    position:relative; z-index:1;
-    border-top:1px solid var(--border);
-    padding:36px 24px 28px;
-  }
-  .footer-inner{
-    max-width:920px; margin:0 auto;
-    display:flex; flex-direction:column; align-items:center; gap:18px;
-  }
-  .footer-links{
-    display:flex; flex-wrap:wrap; justify-content:center; gap:10px 28px;
-  }
-  .footer-links a{
-    color:var(--muted); text-decoration:none; font-size:13px; letter-spacing:0.02em;
-    transition:color .15s ease;
-  }
-  .footer-links a:hover{ color:var(--white); }
-  .copyright{
-    font-size:11px; color:#4d4d52; text-align:center;
-  }
-  @media (max-width: 720px){
-    .benefits{ grid-template-columns:1fr; }
-    .benefit{ transform:none !important; }
-  }
-  @media (prefers-reduced-motion: reduce){
-    .ring{ animation:none; opacity:0.25; }
-    .ring.r1{ width:60px; height:60px; }
-    .ring.r2{ width:80px; height:80px; }
-    .ring.r3{ width:100px; height:100px; }
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Big Screen Moment</title>
+  <meta name="description" content="You were there. We captured it. Big Screen Moment is coming soon.">
+  <meta property="og:title" content="Big Screen Moment">
+  <meta property="og:description" content="You were there. We captured it.">
+  <meta property="og:image" content="/app/logo.png">
+  <meta property="og:url" content="https://bigscreenmoment.com">
+  <meta name="twitter:card" content="summary_large_image">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a090d;
+      color: #d9d4e0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      width: 60vw;
+      height: 60vw;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::before {
+      top: -20vw;
+      right: -20vw;
+      background: radial-gradient(circle, rgba(240, 153, 123, 0.10) 0%, rgba(212, 83, 126, 0.06) 40%, transparent 70%);
+    }
+    body::after {
+      bottom: -25vw;
+      left: -20vw;
+      background: radial-gradient(circle, rgba(127, 119, 221, 0.10) 0%, rgba(212, 83, 126, 0.05) 40%, transparent 70%);
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 64px 24px 0;
+      text-align: center;
+    }
+
+    .capture {
+      position: relative;
+      width: 68px;
+      height: 68px;
+      margin: 0 auto 40px;
+    }
+    .capture .ring {
+      position: absolute;
+      inset: 0;
+      border: 1px solid rgba(212, 83, 126, 0.45);
+      border-radius: 50%;
+      animation: pulse 2.6s ease-out infinite;
+    }
+    .capture .ring:nth-child(2) { animation-delay: 1.3s; }
+    .capture .dot {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 10px;
+      height: 10px;
+      transform: translate(-50%, -50%);
+      background: #ED93B1;
+      border-radius: 50%;
+      box-shadow: 0 0 14px #D4537E, 0 0 34px rgba(212, 83, 126, 0.5);
+    }
+    @keyframes pulse {
+      0%   { transform: scale(0.55); opacity: 0.9; }
+      100% { transform: scale(1.5);  opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .capture .ring { animation: none; opacity: 0.5; }
+    }
+
+    .wordmark {
+      font-size: 13px;
+      letter-spacing: 5px;
+      color: #9a92a8;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-size: clamp(38px, 6.5vw, 58px);
+      font-weight: 800;
+      line-height: 1.12;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+    }
+    .grad {
+      background: linear-gradient(90deg, #AFA9EC, #ED93B1, #F0997B);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .tagline {
+      margin-top: 18px;
+      font-size: 15px;
+      font-style: italic;
+      color: #9a92a8;
+    }
+
+    .divider {
+      width: 46px;
+      height: 1px;
+      background: #3a3344;
+      margin: 26px auto;
+    }
+
+    .promise {
+      font-size: clamp(16px, 2.6vw, 19px);
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-top: 28px;
+      background: #161219;
+      border: 1px solid #2b2533;
+      border-radius: 999px;
+      padding: 9px 20px;
+      font-size: 12px;
+      color: #8f86a0;
+    }
+    .badge strong {
+      color: #EF9F27;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .section-label {
+      margin: 72px 0 34px;
+      font-size: 12px;
+      letter-spacing: 3px;
+      color: #9a92a8;
+    }
+
+    .steps {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .steps::before {
+      content: "";
+      position: absolute;
+      top: 21px;
+      left: 13%;
+      right: 13%;
+      height: 2px;
+      background: linear-gradient(90deg, #7F77DD, #D4537E, #F0997B);
+      opacity: 0.5;
+    }
+    .step { position: relative; }
+    .step-num {
+      width: 44px;
+      height: 44px;
+      margin: 0 auto 14px;
+      border-radius: 50%;
+      background: #0a090d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .step:nth-child(1) .step-num { border: 2px solid #7F77DD; color: #AFA9EC; box-shadow: 0 0 16px rgba(127, 119, 221, 0.35); }
+    .step:nth-child(2) .step-num { border: 2px solid #D4537E; color: #ED93B1; box-shadow: 0 0 16px rgba(212, 83, 126, 0.35); }
+    .step:nth-child(3) .step-num { border: 2px solid #F0997B; color: #F5C4B3; box-shadow: 0 0 16px rgba(240, 153, 123, 0.35); }
+    .step h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+    .step p {
+      max-width: 190px;
+      margin: 0 auto;
+      font-size: 13px;
+      line-height: 1.55;
+      color: #9a92a8;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      max-width: 760px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    .card {
+      background: #131017;
+      border: 1px solid #241f2c;
+      border-radius: 14px;
+      overflow: hidden;
+      transition: transform 0.25s ease, border-color 0.25s ease;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: #362e42;
+    }
+    .card .bar { height: 3px; }
+    .card:nth-child(1) .bar { background: linear-gradient(90deg, #7F77DD, #AFA9EC); }
+    .card:nth-child(2) .bar { background: linear-gradient(90deg, #D4537E, #ED93B1); }
+    .card:nth-child(3) .bar { background: linear-gradient(90deg, #F0997B, #EF9F27); }
+    .card .inner { padding: 22px 18px 24px; }
+    .card .eyebrow {
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      height: 16px;
+    }
+    .card:nth-child(1) .eyebrow { color: #AFA9EC; }
+    .card:nth-child(2) .eyebrow { color: #ED93B1; }
+    .card:nth-child(3) .eyebrow { color: #F0997B; }
+    .card h3 {
+      margin: 10px 0 12px;
+      font-size: 15.5px;
+      font-weight: 700;
+      color: #ffffff;
+      white-space: nowrap;
+      height: 22px;
+    }
+    .card p {
+      font-size: 13px;
+      line-height: 1.6;
+      color: #9a92a8;
+    }
+
+    .cta {
+      padding-top: 68px;
+    }
+    .cta .lead {
+      font-size: 15px;
+      color: #d9d4e0;
+      margin-bottom: 20px;
+    }
+    .cta a {
+      display: inline-block;
+      background: linear-gradient(90deg, #7F77DD, #D4537E, #F0997B);
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border-radius: 999px;
+      padding: 15px 32px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .cta a:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(212, 83, 126, 0.35);
+    }
+    .cta a:focus-visible {
+      outline: 2px solid #ED93B1;
+      outline-offset: 3px;
+    }
+
+    footer {
+      padding: 64px 0 36px;
+    }
+    footer nav {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    footer nav a {
+      color: #8f86a0;
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.2s ease;
+    }
+    footer nav a:hover { color: #d9d4e0; }
+    footer .copyright {
+      font-size: 11px;
+      color: #5c5468;
+    }
+
+    @media (max-width: 640px) {
+      .page { padding-top: 48px; }
+      .steps {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+      .steps::before { display: none; }
+      .cards { grid-template-columns: 1fr; }
+      .card h3, .card .eyebrow { white-space: normal; height: auto; }
+    }
+  </style>
 </head>
 <body>
-  <div class="glow"></div>
-  <div class="grain"></div>
-  <main>
-    <div class="capture">
-      <div class="ring r1"></div>
-      <div class="ring r2"></div>
-      <div class="ring r3"></div>
-      <div class="dot"></div>
+  <div class="page">
+
+    <div class="capture" aria-hidden="true">
+      <span class="ring"></span>
+      <span class="ring"></span>
+      <span class="dot"></span>
     </div>
-    <p class="eyebrow">Big Screen Moment</p>
-    <h1 class="wordmark">Something worth<br><span class="accent">keeping</span> is coming.</h1>
+
+    <p class="wordmark">BIG SCREEN MOMENT</p>
+    <h1>Something worth<br><span class="grad">keeping</span> is coming.</h1>
     <p class="tagline">You were there. We captured it.</p>
+
     <div class="divider"></div>
-    <p class="blurb">
-      A new way for fans to remember and share their big screen moment.
-    </p>
-    <div class="badge"><b>PATENT PENDING</b> &middot; currently piloting</div>
-    <div class="benefits">
-      <div class="benefit card-1">
-        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
-        <div class="num">FOR YOUR FANS</div>
-        <h3>Shared Experiences</h3>
-        <p>Big screen moments are gone as fast as they happen. We capture yours before you even sit back down, so you can share it with the world or just keep it forever.</p>
+
+    <p class="promise">No app. No account. No cost. <span class="grad">Just a text.</span></p>
+
+    <div class="badge"><strong>PATENT PENDING</strong> &nbsp;· currently piloting</div>
+
+    <p class="section-label">HOW IT WORKS</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>See yourself on screen</h3>
+        <p>The big screen prompts you to text in, right from your seat.</p>
       </div>
-      <div class="benefit card-2">
-        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg></div>
-        <div class="num">FOR YOUR PARTNERS</div>
-        <h3>Sponsorship Opportunity</h3>
-        <p>Every moment delivered is a fresh, co-branded placement that gives sponsors a new way to reach fans and be part of the conversation.</p>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Text a keyword</h3>
+        <p>One text. No app, no account, no sign-up flow.</p>
       </div>
-      <div class="benefit card-3">
-        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
-        <div class="num">FOR YOUR TEAMS</div>
-        <h3>Zero Added Lift</h3>
-        <p>Plugs directly into the experience you already have. No new hardware, no new systems, no added staff.</p>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Get your clip instantly</h3>
+        <p>Branded and ready to save, share, or send to the group chat.</p>
       </div>
     </div>
-    <p class="contact">Curious how this could work at your next live event?<br>
+
+    <p class="section-label">WHY WE LOVE IT</p>
+    <div class="cards">
+      <div class="card">
+        <div class="bar"></div>
+        <div class="inner">
+          <p class="eyebrow">FOR YOUR FANS</p>
+          <h3>Shared experiences</h3>
+          <p>Moments vanish as fast as they happen. We capture yours so you can keep it forever.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="bar"></div>
+        <div class="inner">
+          <p class="eyebrow">FOR YOUR PARTNERS</p>
+          <h3>Sponsorship</h3>
+          <p>Every clip is a co-branded placement that travels wherever fans share it.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="bar"></div>
+        <div class="inner">
+          <p class="eyebrow">FOR YOUR TEAMS</p>
+          <h3>Zero added lift</h3>
+          <p>Plugs into what you already run. No new hardware, no systems, no added staff.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta">
+      <p class="lead">Curious how this could work at your next live event?</p>
       <a href="mailto:kevin.delrosario8@gmail.com?subject=Big%20Screen%20Moment%20-%20Pilot%20Partner">Become a Pilot Partner</a>
-    </p>
-  </main>
-  <footer>
-    <div class="footer-inner">
-      <div class="footer-links">
+    </div>
+
+    <footer>
+      <nav>
         <a href="mailto:kevin.delrosario8@gmail.com?subject=Big%20Screen%20Moment%20-%20General%20Inquiry">Contact</a>
         <a href="mailto:kevin.delrosario8@gmail.com?subject=Big%20Screen%20Moment%20-%20Partnership%20Inquiry">Partnerships</a>
         <a href="mailto:kevin.delrosario8@gmail.com?subject=Big%20Screen%20Moment%20-%20Press%20Inquiry">Press</a>
         <a href="mailto:kevin.delrosario8@gmail.com?subject=Big%20Screen%20Moment%20-%20Careers">Careers</a>
-      </div>
-      <div class="copyright">&copy; 2026 Big Screen Moment. All rights reserved.</div>
-    </div>
-  </footer>
+      </nav>
+      <p class="copyright">© 2026 Big Screen Moment. All rights reserved.</p>
+    </footer>
+
+  </div>
 </body>
 </html>
