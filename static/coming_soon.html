@@ -35,12 +35,12 @@
     body::before {
       top: -20vw;
       right: -20vw;
-      background: radial-gradient(circle, rgba(240, 153, 123, 0.10) 0%, rgba(212, 83, 126, 0.06) 40%, transparent 70%);
+      background: radial-gradient(circle, rgba(255, 138, 0, 0.10) 0%, rgba(255, 45, 135, 0.06) 40%, transparent 70%);
     }
     body::after {
       bottom: -25vw;
       left: -20vw;
-      background: radial-gradient(circle, rgba(127, 119, 221, 0.10) 0%, rgba(212, 83, 126, 0.05) 40%, transparent 70%);
+      background: radial-gradient(circle, rgba(180, 75, 255, 0.10) 0%, rgba(255, 45, 135, 0.05) 40%, transparent 70%);
     }
 
     .page {
@@ -61,7 +61,7 @@
     .capture .ring {
       position: absolute;
       inset: 0;
-      border: 1px solid rgba(212, 83, 126, 0.45);
+      border: 1px solid rgba(255, 45, 135, 0.5);
       border-radius: 50%;
       animation: pulse 2.6s ease-out infinite;
     }
@@ -73,9 +73,9 @@
       width: 10px;
       height: 10px;
       transform: translate(-50%, -50%);
-      background: #ED93B1;
+      background: #FF2D87;
       border-radius: 50%;
-      box-shadow: 0 0 14px #D4537E, 0 0 34px rgba(212, 83, 126, 0.5);
+      box-shadow: 0 0 14px #FF2D87, 0 0 34px rgba(255, 45, 135, 0.5);
     }
     @keyframes pulse {
       0%   { transform: scale(0.55); opacity: 0.9; }
@@ -100,7 +100,7 @@
       letter-spacing: -0.5px;
     }
     .grad {
-      background: linear-gradient(90deg, #AFA9EC, #ED93B1, #F0997B);
+      background: linear-gradient(90deg, #B44BFF, #FF2D87, #FF8A00);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
@@ -137,7 +137,7 @@
       color: #8f86a0;
     }
     .badge strong {
-      color: #EF9F27;
+      color: #FF8A00;
       font-weight: 600;
       letter-spacing: 1px;
     }
@@ -164,8 +164,8 @@
       left: 13%;
       right: 13%;
       height: 2px;
-      background: linear-gradient(90deg, #7F77DD, #D4537E, #F0997B);
-      opacity: 0.5;
+      background: linear-gradient(90deg, #B44BFF, #FF2D87, #FF8A00);
+      opacity: 0.55;
     }
     .step { position: relative; }
     .step-num {
@@ -180,9 +180,9 @@
       font-weight: 700;
       font-size: 16px;
     }
-    .step:nth-child(1) .step-num { border: 2px solid #7F77DD; color: #AFA9EC; box-shadow: 0 0 16px rgba(127, 119, 221, 0.35); }
-    .step:nth-child(2) .step-num { border: 2px solid #D4537E; color: #ED93B1; box-shadow: 0 0 16px rgba(212, 83, 126, 0.35); }
-    .step:nth-child(3) .step-num { border: 2px solid #F0997B; color: #F5C4B3; box-shadow: 0 0 16px rgba(240, 153, 123, 0.35); }
+    .step:nth-child(1) .step-num { border: 2px solid #B44BFF; color: #D9A6FF; box-shadow: 0 0 16px rgba(180, 75, 255, 0.4); }
+    .step:nth-child(2) .step-num { border: 2px solid #FF2D87; color: #FF9CC6; box-shadow: 0 0 16px rgba(255, 45, 135, 0.4); }
+    .step:nth-child(3) .step-num { border: 2px solid #FF8A00; color: #FFC178; box-shadow: 0 0 16px rgba(255, 138, 0, 0.4); }
     .step h3 {
       font-size: 15px;
       font-weight: 700;
@@ -217,9 +217,9 @@
       border-color: #362e42;
     }
     .card .bar { height: 3px; }
-    .card:nth-child(1) .bar { background: linear-gradient(90deg, #7F77DD, #AFA9EC); }
-    .card:nth-child(2) .bar { background: linear-gradient(90deg, #D4537E, #ED93B1); }
-    .card:nth-child(3) .bar { background: linear-gradient(90deg, #F0997B, #EF9F27); }
+    .card:nth-child(1) .bar { background: linear-gradient(90deg, #B44BFF, #D9A6FF); }
+    .card:nth-child(2) .bar { background: linear-gradient(90deg, #FF2D87, #FF9CC6); }
+    .card:nth-child(3) .bar { background: linear-gradient(90deg, #FF8A00, #FFC178); }
     .card .inner { padding: 22px 18px 24px; }
     .card .eyebrow {
       font-size: 11px;
@@ -228,9 +228,9 @@
       white-space: nowrap;
       height: 16px;
     }
-    .card:nth-child(1) .eyebrow { color: #AFA9EC; }
-    .card:nth-child(2) .eyebrow { color: #ED93B1; }
-    .card:nth-child(3) .eyebrow { color: #F0997B; }
+    .card:nth-child(1) .eyebrow { color: #D9A6FF; }
+    .card:nth-child(2) .eyebrow { color: #FF9CC6; }
+    .card:nth-child(3) .eyebrow { color: #FFC178; }
     .card h3 {
       margin: 10px 0 12px;
       font-size: 15.5px;
@@ -255,7 +255,7 @@
     }
     .cta a {
       display: inline-block;
-      background: linear-gradient(90deg, #7F77DD, #D4537E, #F0997B);
+      background: linear-gradient(90deg, #B44BFF, #FF2D87, #FF8A00);
       color: #ffffff;
       text-decoration: none;
       font-size: 13px;
@@ -264,14 +264,15 @@
       text-transform: uppercase;
       border-radius: 999px;
       padding: 15px 32px;
+      box-shadow: 0 4px 22px rgba(255, 45, 135, 0.35);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     .cta a:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 24px rgba(212, 83, 126, 0.35);
+      box-shadow: 0 8px 32px rgba(255, 45, 135, 0.55), 0 0 20px rgba(255, 138, 0, 0.3);
     }
     .cta a:focus-visible {
-      outline: 2px solid #ED93B1;
+      outline: 2px solid #FF2D87;
       outline-offset: 3px;
     }
 
