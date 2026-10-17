@@ -312,18 +312,40 @@ PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "http://127.0.0.1:8000")
 ACTIVE_EVENT_ID = 1
 
 
+SMS_KEYWORDS = {"stop", "stopall", "unsubscribe", "cancel", "end", "quit", "optout",
+                "revoke", "start", "unstop", "yes", "help", "info"}
+OPT_OUT_WORDS = {"stop", "unsubscribe", "optout", "cancel", "quit"}
+OPT_OUT_REPLY = ("Big Screen Moment: You are unsubscribed and will get no more messages. "
+                 "Reply START to resubscribe or HELP for help.")
+
+
+def _twiml(message: str = "") -> Response:
+    inner = f"<Message>{message}</Message>" if message else ""
+    return Response(
+        content=f'<?xml version="1.0" encoding="UTF-8"?><Response>{inner}</Response>',
+        media_type="application/xml",
+    )
+
+
 @app.post("/api/sms/inbound")
-async def sms_inbound(Body: str = Form(default=""), From: str = Form(default="")):
+async def sms_inbound(
+    Body: str = Form(default=""),
+    From: str = Form(default=""),
+    OptOutType: str = Form(default=""),
+):
     """
     This is the URL you point Twilio's "A message comes in" webhook at.
-    Whatever the fan actually texted doesn't matter for the pilot - any
-    text to the number gets the current event's gallery link back.
+    Twilio answers STOP, START and HELP itself, so for those we send back
+    an empty reply (otherwise the fan would also get the clip link).
+    A short message like "stop please" gets the unsubscribe reply.
+    Anything else gets the current event's gallery link.
     """
+    text = Body.strip().lower()
+    if OptOutType or text in SMS_KEYWORDS:
+        return _twiml()
+    words = [w.strip(".,!?;:'\"") for w in text.split()]
+    if 0 < len(words) <= 5 and any(w in OPT_OUT_WORDS for w in words):
+        return _twiml(OPT_OUT_REPLY)
     gallery_url = f"{PUBLIC_BASE_URL}/app/gallery.html?event={ACTIVE_EVENT_ID}"
     message = f"You made the BIG screen! \U0001F389 Click here to download your Big Screen Moment: {gallery_url}"
-
-    twiml = (
-        '<?xml version="1.0" encoding="UTF-8"?>'
-        "<Response><Message>" + message + "</Message></Response>"
-    )
-    return Response(content=twiml, media_type="application/xml")
+    return _twiml(message)
