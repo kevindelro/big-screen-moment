@@ -347,5 +347,6 @@ async def sms_inbound(
     if 0 < len(words) <= 5 and any(w in OPT_OUT_WORDS for w in words):
         return _twiml(OPT_OUT_REPLY)
     gallery_url = f"{PUBLIC_BASE_URL}/app/gallery.html?event={ACTIVE_EVENT_ID}"
-    message = f"You made the BIG screen! \U0001F389 Click here to download your Big Screen Moment: {gallery_url}"
+    message = (f"You made the BIG screen! Download your Big Screen Moment video clip: "
+               f"{gallery_url} Reply STOP to opt out, HELP for help.")
     return _twiml(message)
